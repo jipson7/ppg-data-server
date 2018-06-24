@@ -4,21 +4,11 @@
             [monger.result :refer [acknowledged?]])
   (:import [org.bson.types ObjectId]))
 
-(def db-name "ppg")
+(def db (mg/get-db (mg/connect) "ppg"))
 
-(def trials-collection "trials")
-
-(def db (mg/get-db (mg/connect) db-name))
-
-(defn prep-data
-  "Adds object ID to Map"
+(defn save
+  "Returns an id or nil if saving fails"
   [data]
-  (merge {:_id (ObjectId.)} data))
-
-(defn save [data]
-  (acknowledged? (mc/insert
-                  db
-                  trials-collection
-                  (prep-data data))))
-    
-
+  (let [id (ObjectId.)
+        document (merge {:_id id} data)]
+    (if (acknowledged? (mc/insert db "trials" document)) id)))

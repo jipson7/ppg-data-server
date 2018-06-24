@@ -9,13 +9,11 @@
 (defroutes app-routes
   (GET "/" [] "Hello World")
   (POST "/trials" req
-        (do (println req)
-        (if (data/save (:body req))
-          (response "Success")
-          (status (response "Failure") 500)))
-        )
+        (let [id (data/save (:body req))]
+          (if (nil? id)
+            (status (response "Failed") 500)
+            (response (str id)))))
   (route/not-found "Not Found"))
-
 
 (def middleware
   (comp wrap-json-body wrap-defaults))
