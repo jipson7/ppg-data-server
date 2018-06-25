@@ -45,5 +45,13 @@
     (if (updated-existing?
          (mc/update db trial-coll
                     {:_id trial-oid :devices._id device-oid}
-                    {$push {:data document}}))
-      id)))
+                    {$push {:devices.$.data document}}))
+      id
+      (println "Saving Data point failed"))))
+
+(defn test-save []
+  (let [trial {:devices [] :name "test"}
+        trial-id (str (save-trial trial))
+        device-id (str (save-device trial-id
+                                    {:data [] :name "devicetest"}))]
+    (save-data trial-id device-id {:data "test"})))
