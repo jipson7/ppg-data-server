@@ -10,3 +10,4 @@ pom.xml.asc
 /.nrepl-port
 
 mongo.log*
+.DS_Store

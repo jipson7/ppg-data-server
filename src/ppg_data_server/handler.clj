@@ -6,13 +6,19 @@
             [ring.util.response :refer [response status]]
             [ppg-data-server.data :as data]))
 
+(defn gen-response [result]
+  (if (nil? result)
+    (status (response "Failed") 500)
+    (response (str result))))
+
 (defroutes app-routes
   (GET "/" [] "Hello World")
   (POST "/trials" req
-        (let [id (data/save (:body req))]
-          (if (nil? id)
-            (status (response "Failed") 500)
-            (response (str id)))))
+        (let [trial-id (data/save-trial (:body req))]
+          (gen-response trial-id)))
+  (POST "/trials/:id" [id :as {data :body}]
+        (let [device-id (data/save-device id data)]
+          (gen-response device-id)))
   (route/not-found "Not Found"))
 
 (def middleware
