@@ -46,8 +46,7 @@
          (mc/update db trial-coll
                     {:_id trial-oid :devices._id device-oid}
                     {$push {:devices.$.data document}}))
-      id
-      (println "Saving Data point failed"))))
+      id)))
 
 (defn test-save []
   (let [trial {:devices [] :name "test"}
