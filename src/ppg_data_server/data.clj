@@ -26,8 +26,6 @@
 (defn save-device
   "Saves a device to the given trial id"
   [trial-id json]
-  (do
-    (println (str "saving " json " to " trial-id))
     (let [id (ObjectId.)
           trial-oid (ObjectId. trial-id)
           document (set-id id json)]
@@ -35,4 +33,17 @@
           (mc/update db trial-coll
                       {:_id trial-oid}
                       {$push {:devices document}}))
-        id))))
+        id)))
+
+(defn save-data
+  "Saves a data snippet to given device and trial"
+  [trial-id device-id json]
+  (let [id (ObjectId.)
+        trial-oid (ObjectId. trial-id)
+        device-oid (ObjectId. device-id)
+        document (set-id id json)]
+    (if (updated-existing?
+         (mc/update db trial-coll
+                    {:_id trial-oid :devices._id device-oid}
+                    {$push {:data document}}))
+      id)))

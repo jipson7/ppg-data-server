@@ -19,6 +19,10 @@
   (POST "/trials/:id" [id :as {data :body}]
         (let [device-id (data/save-device id data)]
           (gen-response device-id)))
+  (POST "/trials/:trial/devices/:device"
+        [trial device :as {data :body}]
+        (let [data-id (data/save-data trial device data)]
+          (gen-response data-id)))
   (route/not-found "Not Found"))
 
 (def middleware
