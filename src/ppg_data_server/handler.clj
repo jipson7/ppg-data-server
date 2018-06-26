@@ -13,16 +13,14 @@
 
 (defroutes app-routes
   (GET "/" [] (redirect "index.html"))
+  (GET "/trials" [] (gen-response (data/get-trials)))
   (POST "/trials" req
-        (let [trial-id (data/save-trial (:body req))]
-          (gen-response trial-id)))
+        (gen-response (data/save-trial (:body req))))
   (POST "/trials/:id" [id :as {data :body}]
-        (let [device-id (data/save-device id data)]
-          (gen-response device-id)))
+        (gen-response (data/save-device id data)))
   (POST "/trials/:trial/devices/:device"
         [trial device :as {data :body}]
-        (let [data-id (data/save-data trial device data)]
-          (gen-response data-id)))
+        (gen-response (data/save-data trial device data)))
   (route/resources "/")
   (route/not-found "Not Found"))
 

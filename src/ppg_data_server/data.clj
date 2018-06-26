@@ -23,6 +23,11 @@
          (mc/insert db trial-coll document))
       id)))
 
+(defn get-trials
+  "Returns json of trials with metadata"
+  []
+  ())
+
 (defn save-device
   "Saves a device to the given trial id"
   [trial-id json]
