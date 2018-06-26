@@ -10,7 +10,9 @@ Vue.filter('formatDate', function(value) {
         console.log(obj);
         new Vue({
             el: '#trialList',
-            data: {trials: obj},
+            data: {
+                trials: obj
+            },
             methods: {
                 fetch: getTrial
             }
@@ -18,46 +20,54 @@ Vue.filter('formatDate', function(value) {
     });
 })();
 
-function getTrial(trialId) {
-    console.log(trialId);
+var WRIST_DEVICE = "Wrist Worn Device";
+var GROUND_TRUTH = "Ground Truth Sensor";
+
+function getTrial(trial) {
+    var trialId = trial._id;
+    displayTrialInfo(trial);
     $.get("/trials/" + trialId, function(data) {
         var obj = JSON.parse(data);
         console.log(obj);
+        chartDevices(obj);
     });
 }
 
+function displayTrialInfo(trial) {
+    new Vue({
+        el: '#selected_trial',
+        data: {
+            trial: trial
+        }
+    });
+}
 
-//--------------- Chart 1 ---------------//
-var chart1 = new CanvasJS.Chart("chartContainer1", {
-    zoomEnabled: true,
-    zoomType: "x", // change it to "xy" to enable zooming on both axes
-    title: {
-        text: "Chart1 - Try Zooming / Panning"
-    },
-    data: [{
-        type: "line",
-        dataPoints: dataPointsGenerator(100)
-    }],
-    rangeChanged: syncHandler
-});
+function chartDevices(data) {
+    var redData = data[WRIST_DEVICE].red;
+    var irData = data[WRIST_DEVICE].ir;
+    _CHARTS = [
+        createChart(redData, "RED LED", "red_led_chart"),
+        createChart(irData, "IR LED", "ir_led_chart")
+    ];
+}
 
-chart1.render();
-
-//--------------- Chart 2 ---------------//
-var chart2 = new CanvasJS.Chart("chartContainer2", {
-    zoomEnabled: true,
-    zoomType: "x", // change it to "xy" to enable zooming on both axes
-    title: {
-        text: "Chart2 - Try Zooming / Panning"
-    },
-    data: [{
-        type: "line",
-        dataPoints: dataPointsGenerator(100)
-    }],
-    rangeChanged: syncHandler
-});
-
-chart2.render();
-
-// List required for syncing zoom levels
-var charts = [chart1, chart2]; // add all charts (with axes) to be synced
+function createChart(dataPoints, title, containerId) {
+    var timeSeries = dataPoints.map(v => {
+        v.x = new Date(v.x);
+        return v;
+    });
+    var chart = new CanvasJS.Chart(containerId, {
+        zoomEnabled: true,
+        zoomType: "x", // change it to "xy" to enable zooming on both axes
+        title: {
+            text: title
+        },
+        data: [{
+            type: "line",
+            dataPoints: dataPoints
+        }],
+        rangeChanged: syncHandler
+    });
+    chart.render();
+    return chart;
+}

@@ -11,17 +11,20 @@
             <div class="col-sm-3">
                 <h2>Trials</h2>
                 <ul class="list-group" id="trialList">
-                    <li class="list-group-item" v-for="trial in trials" v-on:click="fetch(trial._id)">
+                    <li class="list-group-item" v-for="trial in trials" v-on:click="fetch(trial)">
                         <p>User: {{trial.user.name}}</p>
                         <p>Time: {{trial.start | formatDate }}</p>
-                        <p>Info: {{trial.info }}</p>
                         <p>Devices: <span v-for="device in trial.devices">{{device.type + " (" + device.name + "), "}}</span> </p>
+                        <p>Info: {{trial.info }}</p>
                     </li>
                 </ul>
             </div>
             <div class="col-sm-9">
-                <div id="chartContainer1" style="height: 360px; width: 100%;"></div>
-                <div id="chartContainer2" style="height: 360px; width: 100%;"></div>
+                <div v-cloak id="selected_trial">
+                    {{trial._id}}
+                </div>
+                <div id="red_led_chart" style="height: 360px; width: 100%;"></div>
+                <div id="ir_led_chart" style="height: 360px; width: 100%;"></div>
             </div>
         </div>
     </div>

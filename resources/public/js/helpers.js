@@ -11,9 +11,11 @@ function dataPointsGenerator(limit) {
     return dataPoints;
 }
 
+var _CHARTS = [];
+
 function syncHandler(e) {
-    for (var i = 0; i < charts.length; i++) {
-        var chart = charts[i];
+    for (var i = 0; i < _CHARTS.length; i++) {
+        var chart = _CHARTS[i];
 
         if (!chart.options.axisX)
             chart.options.axisX = {};
