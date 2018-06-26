@@ -25,20 +25,10 @@ var GROUND_TRUTH = "Ground Truth Sensor";
 
 function getTrial(trial) {
     var trialId = trial._id;
-    displayTrialInfo(trial);
     $.get("/trials/" + trialId, function(data) {
         var obj = JSON.parse(data);
         console.log(obj);
         chartDevices(obj);
-    });
-}
-
-function displayTrialInfo(trial) {
-    new Vue({
-        el: '#selected_trial',
-        data: {
-            trial: trial
-        }
     });
 }
 
