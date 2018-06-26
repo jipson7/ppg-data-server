@@ -7,7 +7,6 @@ Vue.filter('formatDate', function(value) {
 (function getTrials() {
     $.get("/trials", function(data) {
         var obj = JSON.parse(data);
-        console.log(obj);
         new Vue({
             el: '#trialList',
             data: {
@@ -22,54 +21,78 @@ Vue.filter('formatDate', function(value) {
 
 var WRIST_DEVICE = "Wrist Worn Device";
 var GROUND_TRUTH = "Ground Truth Sensor";
+var FINGERTIP_SENSOR = "Fingertip Sensor";
 
 function getTrial(trial) {
     var trialId = trial._id;
     $.get("/trials/" + trialId, function(data) {
         var obj = JSON.parse(data);
-        console.log(obj);
         chartDevices(obj);
     });
+}
+
+function datifyTimestamps(device) {
+    for (var key in device) {
+        if (device.hasOwnProperty(key)) {
+            device[key].map(v => {
+                v.x = new Date(v.x);
+                return v;
+            });
+        }
+    }
 }
 
 function chartDevices(data) {
     var charts = [];
 
-    if (data.hasOwnProperty(WRIST_DEVICE)) {
-        var redData = [{
-            type: "line",
-            dataPoints: data[WRIST_DEVICE].red
-        }];
-        var irData = [{
-            type: "line",
-            dataPoints: data[WRIST_DEVICE].ir
-        }];
-        charts.push(createChart(redData, "RED LED", "wrist_red_led_chart"));
-        charts.push(createChart(irData, "IR LED", "wrist_ir_led_chart"));
-    }
+    console.log(data);
 
-    if (data.hasOwnProperty(GROUND_TRUTH)) {
-        var data = [{
+    if (data.hasOwnProperty(WRIST_DEVICE)) {
+        console.log("creating wrist device");
+        datifyTimestamps(data[WRIST_DEVICE]);
+        var lines = [{
             type: "line",
-            dataPoints : data[GROUND_TRUTH].hr,
-            legendText: "HR"
+            dataPoints: data[WRIST_DEVICE].red,
+            legendText: "RED",
+            showInLegend: true,
+            color: "red"
         }, {
             type: "line",
-            dataPoints : data[GROUND_TRUTH].oxygen,
-            legendText: "Oxygen"
+            dataPoints: data[WRIST_DEVICE].ir,
+            lineColor: "blue",
+            legendText: "IR",
+            showInLegend: true,
+            color: "blue"
         }];
-        charts.push(createChart(data, "GROUND TRUTH", "ground_truth"));
+        charts.push(createChart(lines, "Wrist LEDs", "wrist_device"));
     }
+
+    console.log(data);
+
+    if (data.hasOwnProperty(GROUND_TRUTH)) {
+        console.log("creating GT");
+        datifyTimestamps(data[GROUND_TRUTH]);
+        var lines = [{
+            type: "line",
+            dataPoints: data[GROUND_TRUTH].hr,
+            legendText: "HR",
+            showInLegend: true,
+            color: "red"
+        }, {
+            type: "line",
+            dataPoints: data[GROUND_TRUTH].oxygen,
+            legendText: "Oxygen",
+            showInLegend: true,
+            color: "blue"
+        }];
+        charts.push(createChart(lines, "GROUND TRUTH", "ground_truth"));
+    }
+
     _CHARTS = charts;
 }
 
 function createChart(data, title, containerId) {
-    for (var i = 0; i < data.length; i++) {
-        data[i].dataPoints.map(v => {
-            v.x = new Date(v.x);
-            return v;
-        });
-    }
+    console.log("Creating chart for " + containerId);
     var chart = new CanvasJS.Chart(containerId, {
         zoomEnabled: true,
         zoomType: "x", // change it to "xy" to enable zooming on both axes
@@ -80,5 +103,6 @@ function createChart(data, title, containerId) {
         rangeChanged: syncHandler
     });
     chart.render();
+    console.log("rendered");
     return chart;
 }
