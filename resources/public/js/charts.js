@@ -1,12 +1,26 @@
-function getTrials() {
+Vue.filter('formatDate', function(value) {
+    if (value) {
+        return (new Date(value)).toLocaleString();
+    }
+});
+
+(function getTrials() {
     $.get("/trials", function(data) {
-        // var obj = JSON.parse(data);
-        console.log(data);
+        var obj = JSON.parse(data);
+        console.log(obj);
+        new Vue({
+            el: '#trialList',
+            data: {trials: obj},
+            methods: {
+                fetch: getTrial
+            }
+        });
     });
+})();
+
+function getTrial(trialId) {
+    console.log(trialId);
 }
-
-getTrials();
-
 
 
 //--------------- Chart 1 ---------------//

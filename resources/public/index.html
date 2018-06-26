@@ -10,13 +10,16 @@
         <div class="row">
             <div class="col-sm-3">
                 <h2>Trials</h2>
-                <ul class="list-group">
-                    <li class="list-group-item active">Cras justo odio</li>
-                    <li class="list-group-item">Dapibus ac facilisis in</li>
-                    <li class="list-group-item">Morbi leo risus</li>
-                    <li class="list-group-item">Porta ac consectetur ac</li>
-                    <li class="list-group-item">Vestibulum at eros</li>
-                </ul> 
+                <ul class="list-group" id="trialList">
+                    <li class="list-group-item" v-for="trial in trials" v-on:click="fetch(trial._id)">
+                        <p>User: {{trial.user.name}}</p>
+                        <p>Time: {{trial.start | formatDate }}</p>
+                        <p>Info: {{trial.info }}</p>
+                        <p>Devices: <span v-for="device in trial.devices">{{device.type + " (" + device.name + "), "}}</span> </p>
+                                      
+                        
+                    </li>
+                </ul>
             </div>
             <div class="col-sm-9">
                 <div id="chartContainer1" style="height: 360px; width: 100%;"></div>
@@ -25,10 +28,11 @@
         </div>
     </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
 <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js" integrity="sha384-u/bQvRA/1bobcXlcEYpsEdFVK/vJs3+T+nXLsBYJthmdBuavHvAW6UsmqO2Gd/F9" crossorigin="anonymous"></script>
 <script src="js/canvasjs.min.js"></script>
 <script src="js/helpers.js"></script>
-<script src="js/main.js"></script>
+<script src="js/charts.js"></script>
 
 </html>
