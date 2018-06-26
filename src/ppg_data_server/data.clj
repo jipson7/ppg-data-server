@@ -22,19 +22,19 @@
    "Ground Truth Sensor" '(:hr :hr_valid :oxygen :oxygen_valid)
    "Fingertip Sensor" '(:red :ir)})
 
-(defn extract-data-param
+(defn create-chart-data
+  "data set is a list of objects with data and data-key is the data to extract from the objects"
   [data-set data-key]
-  (reduce
-   (fn [new-map datum]
-     (assoc new-map (:timestamp datum) (data-key datum)))
-   {}
+  (map
+   (fn [datum]
+     {:x (:timestamp datum) :y (data-key datum)})
    data-set))
 
 (defn extract-all-data-params
   [data-set keys]
   (reduce
    (fn [new-map key]
-     (assoc new-map key (extract-data-param data-set key)))
+     (assoc new-map key (create-chart-data data-set key)))
    {}
    keys))
 
