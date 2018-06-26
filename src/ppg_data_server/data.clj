@@ -25,10 +25,11 @@
 (defn create-chart-data
   "data set is a list of objects with data and data-key is the data to extract from the objects"
   [data-set data-key]
-  (map
-   (fn [datum]
-     {:x (:timestamp datum) :y (data-key datum)})
-   data-set))
+  (sort-by :x
+   (map
+    (fn [datum]
+      {:x (:timestamp datum) :y (data-key datum)})
+    data-set)))
 
 (defn extract-all-data-params
   [data-set keys]
