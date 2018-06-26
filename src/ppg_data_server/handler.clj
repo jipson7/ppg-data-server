@@ -3,7 +3,7 @@
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.json :refer [wrap-json-body]]
-            [ring.util.response :refer [response status]]
+            [ring.util.response :refer [response status resource-response]]
             [ppg-data-server.data :as data]))
 
 (defn gen-response [result]
@@ -12,7 +12,7 @@
     (response (str result))))
 
 (defroutes app-routes
-  (GET "/" [] "Hello World")
+  (GET "/" [] (resource-response "index.html"))
   (POST "/trials" req
         (let [trial-id (data/save-trial (:body req))]
           (gen-response trial-id)))
@@ -23,10 +23,17 @@
         [trial device :as {data :body}]
         (let [data-id (data/save-data trial device data)]
           (gen-response data-id)))
+  (route/resources "/")
   (route/not-found "Not Found"))
 
+(defn wrap-dir-index [handler]
+  (fn [req]
+    (handler
+     (update-in req [:uri]
+                #(if (= "/" %) "/index.html" %)))))
+
 (def middleware
-  (comp wrap-json-body wrap-defaults))
+  (comp wrap-dir-index wrap-json-body wrap-defaults))
 
 (def app
   (middleware app-routes api-defaults))
