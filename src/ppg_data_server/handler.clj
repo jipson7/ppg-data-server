@@ -2,7 +2,7 @@
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
-            [ring.middleware.json :refer [wrap-json-body]]
+            [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [ring.util.response :refer [response status redirect]]
             [ppg-data-server.data :as data]))
 
@@ -13,7 +13,7 @@
 
 (defroutes app-routes
   (GET "/" [] (redirect "index.html"))
-  (GET "/trials" [] (gen-response (data/get-trials)))
+  (GET "/trials" [] (response (data/get-trials)))
   (POST "/trials" req
         (gen-response (data/save-trial (:body req))))
   (POST "/trials/:id" [id :as {data :body}]
@@ -25,7 +25,7 @@
   (route/not-found "Not Found"))
 
 (def middleware
-  (comp wrap-json-body wrap-defaults))
+  (comp wrap-json-body wrap-json-response wrap-defaults))
 
 (def app
   (middleware app-routes api-defaults))

@@ -1,4 +1,12 @@
-function fetchTrialData
+function getTrials() {
+    $.get("/trials", function(data) {
+        // var obj = JSON.parse(data);
+        console.log(data);
+    });
+}
+
+getTrials();
+
 
 
 //--------------- Chart 1 ---------------//

@@ -14,6 +14,9 @@
   [id json]
   (merge {:_id id} json))
 
+(defn stringify-id [m]
+  (map #(update % :_id str) m))
+
 (defn save-trial
   "Returns a trial id or nil if saving fails"
   [json]
@@ -26,7 +29,11 @@
 (defn get-trials
   "Returns json of trials with metadata"
   []
-  ())
+  (stringify-id
+   (mc/find-maps
+    db
+    trial-coll {}
+    [:start :info :user :devices.name :devices.type])))
 
 (defn save-device
   "Saves a device to the given trial id"
