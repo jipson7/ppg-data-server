@@ -33,29 +33,50 @@ function getTrial(trial) {
 }
 
 function chartDevices(data) {
-    var redData = data[WRIST_DEVICE].red;
-    var irData = data[WRIST_DEVICE].ir;
-    _CHARTS = [
-        createChart(redData, "RED LED", "red_led_chart"),
-        createChart(irData, "IR LED", "ir_led_chart")
-    ];
+    var charts = [];
+
+    if (data.hasOwnProperty(WRIST_DEVICE)) {
+        var redData = [{
+            type: "line",
+            dataPoints: data[WRIST_DEVICE].red
+        }];
+        var irData = [{
+            type: "line",
+            dataPoints: data[WRIST_DEVICE].ir
+        }];
+        charts.push(createChart(redData, "RED LED", "wrist_red_led_chart"));
+        charts.push(createChart(irData, "IR LED", "wrist_ir_led_chart"));
+    }
+
+    if (data.hasOwnProperty(GROUND_TRUTH)) {
+        var data = [{
+            type: "line",
+            dataPoints : data[GROUND_TRUTH].hr,
+            legendText: "HR"
+        }, {
+            type: "line",
+            dataPoints : data[GROUND_TRUTH].oxygen,
+            legendText: "Oxygen"
+        }];
+        charts.push(createChart(data, "GROUND TRUTH", "ground_truth"));
+    }
+    _CHARTS = charts;
 }
 
-function createChart(dataPoints, title, containerId) {
-    var timeSeries = dataPoints.map(v => {
-        v.x = new Date(v.x);
-        return v;
-    });
+function createChart(data, title, containerId) {
+    for (var i = 0; i < data.length; i++) {
+        data[i].dataPoints.map(v => {
+            v.x = new Date(v.x);
+            return v;
+        });
+    }
     var chart = new CanvasJS.Chart(containerId, {
         zoomEnabled: true,
         zoomType: "x", // change it to "xy" to enable zooming on both axes
         title: {
             text: title
         },
-        data: [{
-            type: "line",
-            dataPoints: dataPoints
-        }],
+        data: data,
         rangeChanged: syncHandler
     });
     chart.render();

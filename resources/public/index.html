@@ -14,16 +14,17 @@
                 <h2>Trials</h2>
                 <ul class="list-group" id="trialList">
                     <li class="list-group-item" v-for="trial in trials" v-on:click="fetch(trial)">
-                        <p>User: {{trial.user.name}}</p>
                         <p>Time: {{trial.start | formatDate }}</p>
+                        <p>User: {{trial.user.name}}</p>
                         <p>Devices: <span v-for="device in trial.devices">{{device.type + " (" + device.name + "), "}}</span> </p>
                         <p>Info: {{trial.info }}</p>
                     </li>
                 </ul>
             </div>
             <div class="col-sm-9">
-                <div id="red_led_chart" class="chart"></div>
-                <div id="ir_led_chart" class="chart"></div>
+                <div id="wrist_red_led_chart" class="chart"></div>
+                <div id="wrist_ir_led_chart" class="chart"></div>
+                <div id="ground_truth" class="chart"></div>
             </div>
         </div>
     </div>
