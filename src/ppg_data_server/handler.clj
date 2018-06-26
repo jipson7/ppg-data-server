@@ -14,6 +14,7 @@
 (defroutes app-routes
   (GET "/" [] (redirect "index.html"))
   (GET "/trials" [] (response (data/get-trials)))
+  (GET "/trials/:id" [id] (response (data/get-trial id)))
   (POST "/trials" req
         (gen-response (data/save-trial (:body req))))
   (POST "/trials/:id" [id :as {data :body}]

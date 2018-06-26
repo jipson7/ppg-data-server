@@ -20,6 +20,10 @@ Vue.filter('formatDate', function(value) {
 
 function getTrial(trialId) {
     console.log(trialId);
+    $.get("/trials/" + trialId, function(data) {
+        var obj = JSON.parse(data);
+        console.log(obj);
+    });
 }
 
 

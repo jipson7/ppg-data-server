@@ -14,8 +14,53 @@
   [id json]
   (merge {:_id id} json))
 
-(defn stringify-id [m]
-  (map #(update % :_id str) m))
+(defn stringify-ids [docs]
+  (map #(update % :_id str) docs))
+
+(def device-data-keys
+  {"Wrist Worn Device" '(:red :ir :accel :gyro)
+   "Ground Truth Sensor" '(:hr :hr_valid :oxygen :oxygen_valid)
+   "Fingertip Sensor" '(:red :ir)})
+
+(defn extract-data-param
+  [data-set data-key]
+  (reduce
+   (fn [new-map datum]
+     (assoc new-map (:timestamp datum) (data-key datum)))
+   {}
+   data-set))
+
+(defn extract-all-data-params
+  [data-set keys]
+  (reduce
+   (fn [new-map key]
+     (assoc new-map key (extract-data-param data-set key)))
+   {}
+   keys))
+
+(defn extract-data-for-all-devices
+  [doc]
+  (reduce
+   (fn [new-map device]
+     (assoc new-map
+            (:type device)
+            (extract-all-data-params (:data device) (get device-data-keys (:type device)))))
+   {}
+   (:devices doc)))
+
+(defn get-trials
+  "Returns json of trials with metadata"
+  []
+  (stringify-ids
+   (mc/find-maps
+    db
+    trial-coll {}
+    [:start :info :user :devices.name :devices.type])))
+
+(defn get-trial
+  "Returns a single trial with all nested data"
+  [trial-id]
+   (extract-data-for-all-devices (mc/find-map-by-id db trial-coll (ObjectId. trial-id))))
 
 (defn save-trial
   "Returns a trial id or nil if saving fails"
@@ -25,15 +70,6 @@
     (if (acknowledged?
          (mc/insert db trial-coll document))
       id)))
-
-(defn get-trials
-  "Returns json of trials with metadata"
-  []
-  (stringify-id
-   (mc/find-maps
-    db
-    trial-coll {}
-    [:start :info :user :devices.name :devices.type])))
 
 (defn save-device
   "Saves a device to the given trial id"
