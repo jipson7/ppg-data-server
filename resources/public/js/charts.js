@@ -45,10 +45,7 @@ function datifyTimestamps(device) {
 function chartDevices(data) {
     var charts = [];
 
-    console.log(data);
-
     if (data.hasOwnProperty(WRIST_DEVICE)) {
-        console.log("creating wrist device");
         datifyTimestamps(data[WRIST_DEVICE]);
         var lines = [{
             type: "line",
@@ -67,10 +64,8 @@ function chartDevices(data) {
         charts.push(createChart(lines, "Wrist LEDs", "wrist_device"));
     }
 
-    console.log(data);
 
     if (data.hasOwnProperty(GROUND_TRUTH)) {
-        console.log("creating GT");
         datifyTimestamps(data[GROUND_TRUTH]);
         var lines = [{
             type: "line",
@@ -88,21 +83,42 @@ function chartDevices(data) {
         charts.push(createChart(lines, "GROUND TRUTH", "ground_truth"));
     }
 
+    if (data.hasOwnProperty(FINGERTIP_SENSOR)) {
+        datifyTimestamps(data[FINGERTIP_SENSOR]);
+        var lines = [{
+            type: "line",
+            dataPoints: data[FINGERTIP_SENSOR].red,
+            legendText: "RED",
+            showInLegend: true,
+            color: "red"
+        }, {
+            type: "line",
+            dataPoints: data[FINGERTIP_SENSOR].ir,
+            legendText: "IR",
+            showInLegend: true,
+            color: "blue"
+        }];
+        charts.push(createChart(lines, "Fingertip LEDs", "fingertip_sensor"));
+    } else {
+        $("#fingertip_sensor").remove()
+    }
+
     _CHARTS = charts;
 }
 
 function createChart(data, title, containerId) {
-    console.log("Creating chart for " + containerId);
     var chart = new CanvasJS.Chart(containerId, {
         zoomEnabled: true,
-        zoomType: "x", // change it to "xy" to enable zooming on both axes
+        zoomType: "xy", // change it to "xy" to enable zooming on both axes
         title: {
             text: title
         },
         data: data,
+        axisY: {
+            includeZero: false
+        },
         rangeChanged: syncHandler
     });
     chart.render();
-    console.log("rendered");
     return chart;
 }
