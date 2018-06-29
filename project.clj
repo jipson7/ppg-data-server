@@ -7,7 +7,8 @@
                  [ring/ring-defaults "0.2.1"]
                  [ring/ring-json "0.4.0"]
                  [com.novemberain/monger "3.1.0"]
-                 [org.clojure/data.json "0.2.6"]]
+                 [org.clojure/data.json "0.2.6"]
+                 [me.raynes/conch "0.8.0"]]
   :plugins [[lein-ring "0.9.7"]]
   :ring {:handler ppg-data-server.handler/app
          :nrepl {:start? true

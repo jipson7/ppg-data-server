@@ -1,5 +1,6 @@
 (ns ppg-data-server.algos
-  (:require [ppg-data-server.data :as data])
+  (:require [ppg-data-server.data :as data]
+            [me.raynes.conch :as sh])
   (:use [clojure.string :only [join]] ))
 
 (defn extract-data-points
@@ -18,4 +19,9 @@
 (defn get-led-stdout
   []
   (let [led-samples (get-led-samples)]
-    (str (:red led-samples) " " (:id led-samples))))
+    (str (:red led-samples) " " (:ir led-samples))))
+
+(defn run-algos-sample
+  []
+  (sh/let-programs [run-algos "./bin/algos"]
+    (run-algos {:in (get-led-stdout)})))
