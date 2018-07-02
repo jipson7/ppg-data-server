@@ -27,6 +27,7 @@ function getTrial(trial) {
     var trialId = trial._id;
     $.get("/trials/" + trialId, function(data) {
         var obj = JSON.parse(data);
+        console.log(obj);
         chartDevices(obj);
     });
 }

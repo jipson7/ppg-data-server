@@ -43,7 +43,9 @@
    (fn [new-map device]
      (assoc new-map
             (:type device)
-            (extract-all-data-params (:data device) (get device-data-keys (:type device)))))
+            (extract-all-data-params
+             (:data device)
+             (get device-data-keys (:type device)))))
    {}
    (:devices doc)))
 
@@ -63,8 +65,7 @@
 (defn get-device-info
   "Fetches a list of device ids and types from trial id (string)"
   [trial-id]
-  (map
-   #(update % :_id str)
+  (stringify-ids
    (:devices
     (mc/find-one-as-map
     db
