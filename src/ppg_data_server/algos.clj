@@ -1,6 +1,7 @@
 (ns ppg-data-server.algos
   (:require [ppg-data-server.data :as data]
-            [me.raynes.conch :as sh])
+            [me.raynes.conch :as sh]
+            [clojure.data.json :as json])
   (:use [clojure.string :only [join]] ))
 
 (defn extract-data-points
@@ -17,11 +18,13 @@
               :ir (extract-data-points data :ir))))
 
 (defn get-led-stdout
-  []
-  (let [led-samples (get-led-samples)]
-    (str (:red led-samples) " " (:ir led-samples))))
+  "Creates the output to send to algos binary"
+  [led-window]
+  (str (:red led-window) " " (:ir led-window)))
 
-(defn run-algos-sample
-  []
+(defn run-algos
+  "Runs the algos binary, returns a map"
+  [input]
   (sh/let-programs [run-algos "./bin/algos"]
-    (run-algos {:in (get-led-stdout)})))
+    (json/read-str (run-algos {:in input}) :key-fn keyword)))
+

@@ -1,8 +1,6 @@
 (ns ppg-data-server.data
   (:require [monger.core :as mg]
-            [monger.collection :as mc]
-            [monger.result :refer :all]
-            [monger.operators :refer :all])
+            [monger.collection :as mc])
   (:import [org.bson.types ObjectId]))
 
 (def db
@@ -49,6 +47,10 @@
    {}
    (:devices doc)))
 
+(defn get-trial-ids
+  []
+  (map :_id (get-trials)))
+
 (defn get-trials
   "Returns json of trials with metadata"
   []
@@ -57,6 +59,17 @@
     db
     trial-coll {}
     [:start :info :user :devices.name :devices.type])))
+
+(defn get-device-info
+  "Fetches a list of device ids and types from trial id (string)"
+  [trial-id]
+  (map
+   #(update % :_id str)
+   (:devices
+    (mc/find-one-as-map
+    db
+    trial-coll {:_id (ObjectId. trial-id)}
+    [:devices._id :devices.type]))))
 
 (defn get-trial
   "Returns a single trial with all nested data"
