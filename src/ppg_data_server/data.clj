@@ -2,7 +2,8 @@
   (:require [monger.core :as mg]
             [monger.collection :as mc]
             [monger.result :refer [acknowledged? updated-existing?]]
-            [monger.operators :refer [$push]])
+            [monger.operators :refer [$push]]
+            [clojure.walk :refer [postwalk]])
   (:import [org.bson.types ObjectId]))
 
 (def db
@@ -14,14 +15,6 @@
   [id json]
   (merge {:_id id} json))
 
-(defn stringify-ids [docs]
-  (map #(update % :_id str) docs))
-
-(def device-data-keys
-  {"Wrist Worn Device" '(:red :ir :accel :gyro :_id)
-   "Ground Truth Sensor" '(:hr :hr_valid :oxygen :oxygen_valid :_id)
-   "Fingertip Sensor" '(:red :ir :_id)})
-
 (defn create-x-y-data-for-key
   "data set is a list of objects with data and data-key is the data to extract from the objects"
   [data-set data-key]
@@ -29,39 +22,31 @@
    (map
     (fn [datum]
       {:x (:timestamp datum)
-       :y (if (= data-key :_id)
-            (str (data-key datum))
-            (data-key datum))})
+       :y (data-key datum)})
     data-set)))
 
-(defn extract-all-data-params
-  [device keys]
+(defn flatten-data
+  [data]
   (reduce
    (fn [new-map key]
-     (assoc new-map key (create-x-y-data-for-key (:data device) key)))
+     (assoc new-map key (create-x-y-data-for-key data key)))
    {}
-   keys))
+   (keys (first data))))
 
-(defn extract-data-for-all-devices
-  [doc]
-  (reduce
-   (fn [new-map device]
-     (assoc new-map
-            (:type device)
-            (extract-all-data-params
-             device
-             (get device-data-keys (:type device)))))
-   {}
-   (:devices doc)))
+(defn get-trial
+  "Returns a single trial with all nested data"
+  [trial-id]
+  (let [trial (mc/find-map-by-id db trial-coll (ObjectId. trial-id))
+        devices (:devices trial)]
+    (assoc trial :devices (map #(update % :data flatten-data) devices))))
 
 (defn get-trials
   "Returns json of trials with metadata"
   []
-  (stringify-ids
-   (mc/find-maps
-    db
-    trial-coll {}
-    [:start :info :user :devices.name :devices.type])))
+  (mc/find-maps
+  db
+  trial-coll {}
+  [:start :info :user :devices.name :devices.type]))
 
 (defn get-trial-ids
   []
@@ -70,17 +55,11 @@
 (defn get-device-info
   "Fetches a list of device ids and types from trial id (string)"
   [trial-id]
-  (stringify-ids
-   (:devices
+  (:devices
     (mc/find-one-as-map
     db
     trial-coll {:_id (ObjectId. trial-id)}
-    [:devices._id :devices.type]))))
-
-(defn get-trial
-  "Returns a single trial with all nested data"
-  [trial-id]
-   (extract-data-for-all-devices (mc/find-map-by-id db trial-coll (ObjectId. trial-id))))
+    [:devices._id :devices.type])))
 
 (defn save-trial
   "Returns a trial id or nil if saving fails"

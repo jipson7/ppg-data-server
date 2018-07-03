@@ -4,6 +4,7 @@
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [ring.util.response :refer [response status redirect]]
+            [clojure.walk :refer [postwalk]]
             [ppg-data-server.data :as data]))
 
 (defn gen-response [result]
@@ -25,8 +26,23 @@
   (route/resources "/")
   (route/not-found "Not Found"))
 
-(def middleware
-  (comp wrap-json-body wrap-json-response wrap-defaults))
+(defn stringify-ids [doc]
+  (postwalk
+   (fn [x]
+     (if (and (map? x) (contains? x :_id))
+       (update x :_id str) x))
+   doc))
+
+(defn wrap-string-ids
+  [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (stringify-ids response))))
 
 (def app
-  (middleware app-routes api-defaults))
+  (-> app-routes
+      (wrap-defaults api-defaults)
+      wrap-string-ids
+      wrap-json-response
+      wrap-json-body
+      ))
