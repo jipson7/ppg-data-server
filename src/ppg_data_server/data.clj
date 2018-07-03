@@ -1,6 +1,8 @@
 (ns ppg-data-server.data
   (:require [monger.core :as mg]
-            [monger.collection :as mc])
+            [monger.collection :as mc]
+            [monger.result :refer [acknowledged? updated-existing?]]
+            [monger.operators :refer [$push]])
   (:import [org.bson.types ObjectId]))
 
 (def db
@@ -16,24 +18,27 @@
   (map #(update % :_id str) docs))
 
 (def device-data-keys
-  {"Wrist Worn Device" '(:red :ir :accel :gyro)
-   "Ground Truth Sensor" '(:hr :hr_valid :oxygen :oxygen_valid)
-   "Fingertip Sensor" '(:red :ir)})
+  {"Wrist Worn Device" '(:red :ir :accel :gyro :_id)
+   "Ground Truth Sensor" '(:hr :hr_valid :oxygen :oxygen_valid :_id)
+   "Fingertip Sensor" '(:red :ir :_id)})
 
-(defn create-chart-data
+(defn create-x-y-data-for-key
   "data set is a list of objects with data and data-key is the data to extract from the objects"
   [data-set data-key]
   (sort-by :x
    (map
     (fn [datum]
-      {:x (:timestamp datum) :y (data-key datum)})
+      {:x (:timestamp datum)
+       :y (if (= data-key :_id)
+            (str (data-key datum))
+            (data-key datum))})
     data-set)))
 
 (defn extract-all-data-params
-  [data-set keys]
+  [device keys]
   (reduce
    (fn [new-map key]
-     (assoc new-map key (create-chart-data data-set key)))
+     (assoc new-map key (create-x-y-data-for-key (:data device) key)))
    {}
    keys))
 
@@ -44,14 +49,10 @@
      (assoc new-map
             (:type device)
             (extract-all-data-params
-             (:data device)
+             device
              (get device-data-keys (:type device)))))
    {}
    (:devices doc)))
-
-(defn get-trial-ids
-  []
-  (map :_id (get-trials)))
 
 (defn get-trials
   "Returns json of trials with metadata"
@@ -61,6 +62,10 @@
     db
     trial-coll {}
     [:start :info :user :devices.name :devices.type])))
+
+(defn get-trial-ids
+  []
+  (map :_id (get-trials)))
 
 (defn get-device-info
   "Fetches a list of device ids and types from trial id (string)"
@@ -111,9 +116,8 @@
                     {$push {:devices.$.data document}}))
       id)))
 
-(defn test-save []
-  (let [trial {:devices [] :name "test"}
-        trial-id (str (save-trial trial))
-        device-id (str (save-device trial-id
-                                    {:data [] :name "devicetest"}))]
-    (save-data trial-id device-id {:data "test"})))
+(defn save-algo-result
+  "Saves result to existing collection"
+  [result data-id]
+  (identity data-id))
+
