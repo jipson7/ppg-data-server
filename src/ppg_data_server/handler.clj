@@ -5,6 +5,7 @@
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [ring.util.response :refer [response status redirect]]
             [clojure.walk :refer [postwalk]]
+            [ppg-data-server.algos :as algos]
             [ppg-data-server.data :as data]))
 
 (defn gen-response [result]
@@ -15,7 +16,7 @@
 (defroutes app-routes
   (GET "/" [] (redirect "index.html"))
   (GET "/trials" [] (response (data/get-trials)))
-  (GET "/trials/:id" [id] (response (data/get-trial id)))
+  (GET "/trials/:id" [id] (response (algos/apply-algo-to-trial (data/get-trial id))))
   (POST "/trials" req
         (gen-response (data/save-trial (:body req))))
   (POST "/trials/:id" [id :as {data :body}]

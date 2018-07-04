@@ -25,31 +25,26 @@
   [red ir]
   (str (join "," red) " " (join "," ir)))
 
-(defn apply-algo-to-device
+(defn apply-algo-to-data
   "Windowizes device data and applies the algos binary to its data"
-  [device trial-id]
-  (let [device-id (:_id device)
-        data (:data device)
-        windowed (windowize-data data 100)
+  [data]
+  (let [windowed (windowize-data data 100)
         red-windows (:red windowed)
-        ir-windows (:ir windowed)
-        id-windows (:_id windowed)]
-    (first
-      (map
-        (fn [[red-window ir-window id-window]]
+        ir-windows (:ir windowed)]
+    (assoc data :algos (map
+        (fn [[red-window ir-window]]
           (let [red (map :y red-window)
                 ir (map :y ir-window)
-                data-id (:y (last id-window))
+                timestamp (last (map :x red-window))
                 out (get-led-stdout red ir)
                 result (run-algos out)]
-            (data/save-algo-result result data-id device-id trial-id)))
-        (map vector red-windows ir-windows id-windows)))))
+            (hash-map :x timestamp :y result)))
+        (map vector red-windows ir-windows)))))
 
 (defn apply-algo-to-trial
   [trial]
-  (doall
-   (map
-    (fn [device]
-      (if (not (= "Ground Truth Sensor" (:type device)))
-        (apply-algo-to-device device (:_id trial))))
-    (:devices trial))))
+  (assoc trial :devices
+         (map #(if (not (= "Ground Truth Sensor" (:type %)))
+                 (update % :data apply-algo-to-data)
+                 %)
+              (:devices trial))))

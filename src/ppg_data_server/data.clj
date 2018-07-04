@@ -2,7 +2,7 @@
   (:require [monger.core :as mg]
             [monger.collection :as mc]
             [monger.result :refer [acknowledged? updated-existing?]]
-            [monger.operators :refer [$push]]
+            [monger.operators :refer [$push $set]]
             [clojure.walk :refer [postwalk]])
   (:import [org.bson.types ObjectId]))
 
@@ -94,9 +94,3 @@
                     {:_id trial-oid :devices._id device-oid}
                     {$push {:devices.$.data document}}))
       id)))
-
-(defn save-algo-result
-  "Saves result to existing collection"
-  [result data-id device-id trial-id]
-  (println result))
-
