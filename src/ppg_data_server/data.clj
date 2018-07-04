@@ -97,6 +97,6 @@
 
 (defn save-algo-result
   "Saves result to existing collection"
-  [result data-id]
-  (identity data-id))
+  [result data-id device-id trial-id]
+  (println result))
 

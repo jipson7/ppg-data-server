@@ -4,15 +4,15 @@
             [clojure.data.json :as json])
   (:use [clojure.string :only [join]] ))
 
-(defn windowize-device-data
+(defn windowize-data
   "Take the x-y'd device data and creates sliding windows"
-  [device window-size]
+  [data window-size]
   (reduce
    (fn [new-map [k v]]
      (assoc new-map k
             (partition window-size 1 v)))
    {}
-   (seq device)))
+   (seq data)))
 
 (defn run-algos
   "Runs the algos binary, returns a map"
@@ -27,8 +27,10 @@
 
 (defn apply-algo-to-device
   "Windowizes device data and applies the algos binary to its data"
-  [device]
-  (let [windowed (windowize-device-data device 100)
+  [device trial-id]
+  (let [device-id (:_id device)
+        data (:data device)
+        windowed (windowize-data data 100)
         red-windows (:red windowed)
         ir-windows (:ir windowed)
         id-windows (:_id windowed)]
@@ -37,8 +39,17 @@
         (fn [[red-window ir-window id-window]]
           (let [red (map :y red-window)
                 ir (map :y ir-window)
-                id (:y (last id-window))
+                data-id (:y (last id-window))
                 out (get-led-stdout red ir)
                 result (run-algos out)]
-            (data/save-algo-result result id)))
+            (data/save-algo-result result data-id device-id trial-id)))
         (map vector red-windows ir-windows id-windows)))))
+
+(defn apply-algo-to-trial
+  [trial]
+  (doall
+   (map
+    (fn [device]
+      (if (not (= "Ground Truth Sensor" (:type device)))
+        (apply-algo-to-device device (:_id trial))))
+    (:devices trial))))
