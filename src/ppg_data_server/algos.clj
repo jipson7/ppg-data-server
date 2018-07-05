@@ -14,11 +14,12 @@
    {}
    (seq data)))
 
-(defn run-algos
+(defn run-algos-uncached
   "Runs the algos binary, returns a map"
   [input]
   (sh/let-programs [run-algos "./bin/algos"]
     (json/read-str (run-algos {:in input}) :key-fn keyword)))
+(def run-algos (memoize run-algos-uncached))
 
 (defn get-led-stdout
   "Creates the output to send to algos binary"
@@ -41,10 +42,17 @@
             (hash-map :x timestamp :y result)))
         (map vector red-windows ir-windows)))))
 
-(defn apply-algo-to-trial
+(defn apply-algo-to-trial-uncached
   [trial]
   (assoc trial :devices
          (map #(if (not (= "Ground Truth Sensor" (:type %)))
                  (update % :data apply-algo-to-data)
                  %)
               (:devices trial))))
+(def apply-algo-to-trial (memoize apply-algo-to-trial-uncached))
+
+;; Force cache of trials
+(println "Forcing trial caching")
+(doall (map apply-algo-to-trial
+            (for [id (data/get-trial-ids)]
+              (data/get-trial (str id)))))
